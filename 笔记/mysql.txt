@@ -1,0 +1,801 @@
+数据库--文件夹
+数据表--存放文件，对应具体文件
+
+service mysql start    //linux 启动服务
+service mysql restart   //重启
+service mysql stop      //停
+
+1.SQL语句简单分类;
+DDL：数据定义语言，维护存储数据的结构
+	create（创建）,drop（删除）,alter(改变)
+DML：数据操纵语言,主要对数据进行操作
+	insert，delete，update
+DQL：数据查询语言，select（多表查询，联合查询等）
+DCL：数据控制语言，负责权限管理与事务
+	grant,revoke,commit
+
+*****************************************************************************
+1.数据定义语言（DDL），包括CREATE（创建）命令、ALTER（修改）命令、DROP（删除）命令等。
+2. 数据操纵语言（DML），包括INSERT（插入）命令、UPDATE（更新）命令、DELETE（删除）命令、SELECT …FOR UPDATE（查询）等。
+3. 数据查询语言（DQL），包括基本查询语句、Order By子句、Group By子句等。
+4. 事务控制语言（TCL），包括COMMIT（提交）命令、SAVEPOINT（保存点）命令、ROLLBACK（回滚）命令。
+5. 数据控制语言（DCL），GRANT（授权）命令、REVOKE（撤销）命令。
+*****************************************************************************
+
+
+2.库的操作
+创建数据库：create database [IF NOT EXISTS] db_name [CHARTSET] [COLLATE]
+IF NOT EXISTS:检测是不是有重名数据库（建议写上）
+CHARTSET：设置数据库，数据表字符集
+COLLATE：设置数据库校验规则
+校验规则：
+utf8_general-ci : 不区分大小写(默认规则)
+	（eg. select * from tt1 where name = 'a';把name = 'A'也查到了）
+	（不区分大小写：按照字母顺序来排序，order by
+	（ select * from tt1 order by name;））
+utf8_bin:区分大小写，（指定查A就不会出现a）
+	（区分大小写排序，按照ASCII排序）
+
+show database:看有哪些库。
+show variables like 'character_set_database'; 看编码方式
+show variables like 'collation_database';看校验规则
+
+操纵数据库
+查看当前存在的数据库：show databases;
+查看数据库创建语句; show create database 数据库名;
+
+修改数据库：（alter）
+
+修改字符集：alter database 库名 char set=gbk;
+修改校验规则;alter database 库名 collate utf8_bin;
+
+删库操作：（drop）
+drop database 库名;
+
+
+备份与恢复数据库:
+备份（os 控制台下）
+mysqldump -u root -p -B 数据库名 > 存储数据库（备份文件）的文件路径
+恢复（mysql 控制台）
+source 文件路径
+
+mysqdump -u root -p -B 数据库名 表名1 表名2 > 存储数据库的文件路径
+
+
+查看当前数据库连接：
+show processlist;
+
+
+
+
+
+关于表的操作：
+
+1.创建数据表：
+create table 表名(
+	id int;
+	name varchar(10);
+)charset=utf8 collate utf8_bin engine InnoDB;
+
+//engine：InnoDB; //指定存储引擎
+
+desc 表名;看表的属性
+show create table bit_user;看表的详细信息
+
+2.修改数据表
+向现有数据表添加列
+alter table 数据表名 add 列名 列类型
+alter table 数据表名 add 列名 列类型 [after 现有列] //（设置列的顺序）
+alter table 数据表名 modify 要修改的列名 修改后的属性
+例：alter table bit_user modify name varchar(20);
+
+3.删除现有列（一旦删除，该列清空）
+alter table 数据表名 drop 要删除的列名
+
+4.修改表名
+alter table 表名 rename to 新表名
+
+5.修改表字符集
+alter table 表名 charset=字符集
+
+6.修改列名（新列名需要完整定义）
+alter table 表名 change 要修改的列名 修改后的列名 属性
+
+
+****************** 8—1*************************
+数字：
+1.mysql中尽量不使用unsigned；
+2.bit(M) 类型存储到MySQL中默认使用ASCII码显示
+3.float(m.d)[unsigned]
+	m表示总位数，d表示小数点后的位数
+	浮点数保存时，mysql会自动四舍五入，（多的位数四舍五入）
+	float(4,2):-99.99 - 99.99
+	unsigned: 0 - 99.99		(double后总位数会越界，所以不double)
+4.decimal(n,d)[unsigned]		 （mysql推荐使用decimal保存浮点数）
+	decimal精度更高，float精度到小数点后7位
+	m最大值65 d最大值30
+字符：
+1.char(L)
+	定长字符长，L表示字符个数，L最大为255
+	MySQL中中文字符也是一个字符
+	char(2)：可以插入两个字符的字符串，中英文都可以
+		   当存入的位数小于2，还是按照定长位数来存储（存两个字符）
+2.varchar(L)
+	可变长度字符串
+	L表示字符长度，最大长度65535个字节
+	varchar(5)， 插‘abc’实际存放的就是3个字符
+
+utf-8下;一个字符3个字节 L最大为21844 （65535/3=21845），数据表中没有任何其他类型的数据才是21844.
+	  （mysql数据前要用三个字节存储结构信息）
+
+	要求变长字符串不超过35000字节，超过此字节，必须将varchar变为text类型
+
+如果存储数据时，数据长度都一样，就使用定长字符串，检索效率高
+如果存储数据时，数据长度不确定，使用变长字符串，节省磁盘空间
+
+日期和时间类型：
+datatime:"yyyy-mm-dd HH:ii:ss"  占8个字节 日期类型
+data:    "yyyy-mm-dd" 占3个字节
+timestamp:"yyyy-mm-dd HH:ii:ss"  占4个字节 UTC时间（无须手工插入或更新）
+		每当数据库中有数据新增或更新时，时间戳就会自动更新当前时间	
+
+enum与set
+enun表示单选存储数据时可以使用1-65535开始的下标来存储
+set表示多选，插入数据时，必须在同一个‘ ’中设置选项，中间用逗号隔开
+插入数据必须在集合集合中存在；
+find_in_set('要查找的数据项'，对应set集合)
+select * from tt7 where find_in_set ('set中的一个元素',set的名字)
+
+
+Mysql表约束
+
+1.默认为Null，可以not null
+数据为空时无法进行运算
+在规定字段为not null，在做数据插入时，该字段必须有值插入或者有默认值
+
+2.默认值 default
+某一种数据经常出现，可以在数据表定义时就指定其为默认值，也可以与空值约束搭配使用（id int not null default 0,）
+
+3.列描述 comment   （这一列是干嘛的，给数据库管理员看）
+用于描述字段，会根据创建语句保存,主要是给
+例（ name varchar(10) not null comment '此列用于描述姓名'）
+在show create table 中看到描述信息
+
+4.zerofill 自动补0
+(  num1 int zerofill  )
+如果定义某整数列为zerofill约束，该整数列自动变为无符号整数；
+定义某整数列为zerofill，当整数位数不足时，会在前面自动补0
+
+5.主键约束 primary key
+主键约束：不能重复，不能为空，一张表中最多只能有一个主键；主键所在的列一般是整数类型；
+
+6.复合主键：  多个字段作为主键
+primary key(复合属性1，复合属性2 ........)
+
+创建表后追加主键：
+alter table 表名 add primary key(字段列表)；
+删除主键：
+alter table 表名 drop primary key;
+即便把主键属性删了，也还是会not null
+
+*************************   8—6   **********************************
+
+6.自增长 auto_increment(与主键搭配使用，作为逻辑主键)
+表中要使用自增长
+。该字段必须至少是索引
+。该字段必须是整数
+。一张表最多只有一个自增长
+以当前表最大值为基准+1，即使最大值被删除，还是以出现过的最大值为基准
+
+create table tt1(
+id int primary key auto_invrement
+)
+
+7.唯一键
+唯一键可以解决表中有多个字段需要唯一性约束的问题
+表中允许多个字段被设置为唯一键
+唯一键允许为空，并且允许多个为空（null），空值不作为唯一键进行比较
+
+create table tt2(
+id int unique,
+name varchar(10)
+);
+
+8.外键 foreign key(字段名) references 主表（列名）
+外键用于定义主表与表关系
+外键约束定义在从表上，外键约束对应的主表必须是有主键约束或唯一键约束
+外键所在的列做数据插入时，该数据必须在主表中存在
+
+class-id int,
+foreign key(class_id) references myclass(id)
+
+
+
+
+
+
+六. 表的增删改查（Create, Retrieve，Update，Delete : CURD) 
+
+1.增加
+insert into 表名（要插入的列名。。。） values (对应列的值)
+
+插入数据必须与字段对应的数据类型相同
+数值型可以插入字符串‘101’   （字符型数字）
+
+插入数据必须在规定范围内
+
+values列出的数据位置必须与规定位置相对应
+
+日期与字符类型必须包含在单引号中 否则MySQL不识别
+
+批量插入：直接在values后面values(),(),(),(),().....
+
+增加进阶：主要针对主键重复时的插入，先删除再插入
+
+1.更新操作;
+当主键重复时，先删除之前的数据再做插入
+insert into 表名（字段列表） values （要插入的值）
+	on duplicate key updata 字段 = 要插入的值
+（插入一条数据，如果插入后会导致主键冲突，则执行update的语句来更新旧的一条中的数据）
+
+
+
+
+2.替换操作
+replace into 表名（字段名称） values（值列表）
+
+
+
+2.更新
+update 表名 set [字段=值]，[字段=值]......
+	[where 语句] [limit n]
+a.不跟where语句的更新操作，更新了一列；（update goods set price = 20.55;）
+  有where则更新一行；（ update goods set price = 1.5 where id = 100;）
+b.update goods set price=3.5  limit 2;(只更新两行)
+
+3.删除
+delete from 表名【where语句】
+
+删除指定数据
+delete from goods where id=100;
+
+删除整表数据（慎用）：
+delete from 表名;:（一行一行的全删了）（返回被删除的行数）（对表结构无影响）
+
+truncate table 表名 ：整表删除（直接把文件大小给改成0）（这样删除更快，一次性删除所有表数据）（对表结构无影响）
+
+
+
+轻量级备份表：
+1.创建与goods表一样结构的空表
+create table goods2 like goods;
+2.导入数据
+insert into goods2 select * from goods;
+
+
+4.查询
+
+select [distinct] * \ 要查询的列名...
+
+1.查询指定列
+select id,name,math from student;
+2.去重查询
+如果结果中有重复行，去掉重复的（select distinct math from student;）
+3.select可以对查询结果进行计算（不会影响表中数据）
+（select distinct math-10 from student;）
+4.select可以为查询结果集取名
+ select distinct math as 'shuxunchengji' from student;
+5.查询所有学生总成绩并加10分
+select （chinese+math+english）+10 as '总成绩' from student;
+
+6.查询表中姓杨的成绩提高50%后的总成绩；
+select name,(chinese+math+english)*1.5 as '总成绩'from student where name like '杨%';
+
+where查询过滤
+
+比较操作符;
+in():  显示在in列表中的值
+like()： 模糊查询
+between ... and ...： 查询在某一区间的值 （闭区间）
+
+逻辑操作符：
+and：  多个条件同时成立
+or:  多个条件任一成立
+not:  不成立
+
+7.查询所有英语成绩大于80分的同学的姓名和英语成绩
+select name,english from student where english>80;
+
+
+8.查询总成绩大于200分的所有同学的姓名和总成绩
+select name,(chinese+math+english) as '总成绩' from student where (chinese+math+english) >200;
+
+where 子句不可以使用别名 上面一句中(chinese+math+english)不能用‘总成绩’代替
+
+9.查询id<5并且姓杨的同学
+select name from student where id<5 and name like'杨%';
+
+select name,math from student where math between 60 and 80;
+
+select name from student where math in(60,70.5,80,40.50);
+
+select ... from ...  where ...
+
+
+9.删除表中重复记录，重复记录只能保存一份
+
+做这种题，四步走：
+a.创建一个与原来表结构完全相同的新表
+create table student2 like student;
+b.插入不重复记录
+insert into student2 select distinct math,name,id,from student;
+c.删除原来表
+drop table tt3;	
+d.将新表名改为原表名
+alter table tt4 rename tt3;
+
+
+（alter table tt2 drop column name; //删除name列）
+
+
+
+一.简单查询
+
+1.order by语句：对结果集排序；
+select 列名
+	from 表
+	where 条件
+	order by 列名[asc][desc]
+
+。默认为升序；
+。order by 要写在select语句末尾
+。order by 可以使用别名（select name,(math+english) as 'sy' from student 				order by 'sy';）
+
+
+eg.查询姓杨的总成绩，按降序排序
+ select name,(chinese+math+english) as total from student where name like '杨%' order by 'total' desc;
+
+2.limit分页查询
+
+select字段
+	from 表名
+	where 条件
+	limit 起始位置（默认从0开始），记录条数
+
+查询所有学生信息，将结果集每页三个展示，表示查询第一页
+
+
+3.聚合函数
+
+1.count()函数   ： 返回表中的记录数（表中有多少条记录）
+select count(*) 或者 count(列名)
+	from表名
+	where条件
+
+.count会统计值为null的情况，count(列名)会自动去重（不统计值为空的）
+
+
+2.sum()函数  ： 返回满足where条件的所有行的和
+select sum(列名)，[sum（列名）..]
+	from 表名
+	[where 条件]
+
+eg.统计一个班的数学总成绩
+select sum(math) 
+	from student;
+
+求各科目平均值
+ select sum(english)/count(*),sum(chinese)/count(*),sum(math)/count(*) from student;
+
+3.avg()  ： 返回满足shere条件某一列的平均值（去空求值）
+select avg(math)
+	from student;
+
+4.max()min()  : 返回满足条件的某一列的最大或最小值
+
+
+求班级最高和最低分的学生姓名和总成绩
+
+5.select 列名
+	from 表名
+	group by 列名
+
+eg.显示每个部门(deptno)的平均工资（sal）和最高工资
+select avg(sal),max(sal)
+	from emp
+	group by deptno;
+
+eg.显示每个部门的每种岗位的平均工资与最高工资
+select avg(sal),max(sal)
+	from emp
+	group bu deptno,job;
+					(先按deptno分，再按job分)
+
+select avg(sal),max(sal),deptno,job 
+	from emp 
+	group by deptno,job;
+
+显示平均工资低于2000的部门编号和他的平均工资
+select deptno,avg(sal) as dept_avg
+	from emp
+	group bu deptno
+	having dept_avg < 2000;
+
+在group by语句中如果有条件过滤，使用having语句
+	having语句只能和group by语句搭配使用
+
+select current_date();		日期
+select current_time();		当前时间
+select current_timestamp();	时间戳
+select date_add(current_date,interval 10 day);在当前时间上再加10天
+select date_sub(current_date,interval 10 day);在当前时间上减去10天
+select date_diff(时间1，时间2);计算两个时间差
+insert into msg values(2,'hahha',date_sub(current_timestamp,interval 2 day));
+select user();			当前账号
+select database();			看使用的哪个数据库
+
+
+
+查询工资(sal)高于500或者岗位(job)为MANAGER的雇员，同时满足姓名(ename)首字母为大写的J
+select ename
+	from emp
+	where (sal > 500 or job = 'MANAGER') and ename like 'J%';
+
+按照部门号升序而员工工资降序排序
+select * 
+	from emp
+	order by deptno , sal desc;
+
+显示工资最高的员工信息
+select *  
+	from emp 
+	where sal = (select max(sal) from emp);
+	(函数要在select语句里使用)
+
+显示每种岗位的雇员总数，平均工资
+select count(*),avg(sal),job
+	from emp
+	group by job;
+
+where:
+where是一个约束声明,使用where来约束来自数据库的数据;
+where是在结果返回之前起作用的;
+where中不能使用聚合函数。
+having:
+having是一个过滤声明;
+在查询返回结果集以后，对查询结果进行的过滤操作;
+在having中可以使用聚合函数。
+
+聚合函数就是例如SUM, COUNT, MAX, AVG等对一组(多条)数据操作的函数，需要配合group by 来使用。
+
+
+
+二.多表查询
+数据来源于不同的表
+
+查询员工姓名（ename），工资(sal)，和部门所在的名字(deptno表中dname)
+select * 
+	from emp,dept;		//不可用
+      (带逗号是笛卡尔积)
+
+select enmae,sal,dname
+	from emp,dept
+	where emp.deptno = dept.deptno;
+
+显示部门编号为10的部门名称，员工的姓名，员工工资
+select dname,ename,sal
+	from emp,dept
+	where dept.deptno = emp.deptno and emp.deptno = 10;
+
+1.自连接
+自连接表示在同一张表中连接查询
+
+显示员工姓名为FORD的上级领导的编号和上级领导姓名
+(方法一：单表自连接查询)
+select empno,ename
+	from emp
+	where empno = (select mgr from emp where ename = 'FORD')
+（方法二;单表多表查询）(为表起别名)
+select leader.enmae,leader.empno
+	from emp leader,emp worker
+	where worker.mgr = leader.empno and worker.ename = 'FORD'
+
+
+2.子查询
+子查询是指嵌入在其他sql语句中的select语句，也叫嵌套查询
+
+a.单行子查询
+子查询只返回一个记录
+
+eg.查找和SMITH同部门的员工
+select *
+	from emp
+	where deptno = (select deptno from emp where enmae ='SMITH');
+
+b.多行子查询
+子查询返回多条记录
+
+in:只要在子查询返回结果的范围中都可以
+all:所有
+any:任意
+（min()和max() 可以替换 all和any）
+
+eg.查询和10号部门工作相同的雇员姓名，岗位，工资，但是不包含10号部门
+select ename,job,sal,deptno
+	from emp
+	where job in (select distinct job emp where deptno = 10;)
+	and deptno<>10;   //<>表示除10以外
+
+//select distinct job emp where deptno = 10;
+
+eg.显示工资比 部门30 的所有员工工资高的员工姓名，工资，部门编号
+select ename,sal,deptno
+	from emp
+	where sal > all(select sal from emp where deptno = 30);
+
+eg.显示工资比 部门30 的任意员工工资高的员工姓名，工资，部门编号
+select ename,sal,deptno
+	from emp
+	where sal > all(select sal from emp where deptno = 30);
+
+
+c.多列子查询
+子查询返回多个列数据
+
+eg.查询和SMITH部门和岗位相同的雇员信息，但是不包含SMITH本人
+select *
+	from emp
+	where (deptno,job) = 
+		(select deptno,job from emp where ename = 'SMITH')
+	and ename<> 'SMITH';
+
+4.from语句中的子查询
+将子查询的结果作为临时表
+
+eg.查询高于自己部门平均工资的员工信息（姓名，部门编号，平均工资）
+select ename,deptno,sal
+	from emp , 
+	     (select avg(sal),deptno as dt from emp group by deptno) as temp
+	where emp.deptno = temp.dt
+	and emp.sal > temp.avg_sal;
+
+5.合并查询 （union,union all）
+合并多个select语句的执行结果
+
+union:取得两个结果的并集，并且自动去除重复行
+union all: 只不过不去重
+
+eg.将工资大于2500的职位为MANAGER的人找出来
+select *
+	from emp 
+	where sal > 2500
+union
+select * 
+	from emp 
+	where job = 'MANAGER';
+
+
+6.表的内外连接
+a.内连接（默认的）
+内连接利用where子句对两种表形成的笛卡尔积进行筛选
+select 字段 from 表1
+	inner join 表2 on 连接条件
+等同于
+select 字段 from 表1
+	where 表1.列 = 表2.列
+
+select ename,dname from emp,dept where emp.deptno=dept.deptno and emp.ename='smith';
+select ename,dname from emp inner join dept on dept.deptno=emp.deptno and emp.ename='smith';
+
+b.外连接
+。左外连接
+两张表联合查询，以左表为主(左表中即使有数据在右表中对应不上，也把这些数据表示出来，左表的数据完全展示)
+select 字段名
+	from 表名1 left join 表名2 on 连接条件
+
+eg.查询所有学生成绩，如果该学生没有成绩，也要将学生信息显示出来
+select name,grade 
+	from stu left join exam 
+	on stu.id = exam.id;
+
+。右外连接
+联合查询，右侧的表完全显示，以表2为主
+select 字段名
+	from 表名1 right join 表名2 on 连接条件
+
+eg.查询所有学生成绩，如果该成绩没有人，也要将成绩显示出来
+
+
+select count(*) from 表名; //看共有多少行
+desc 表名; //看属性
+
+
+****************************  8—13  ****************************
+
+一。索引：提高海量数据查询速度
+select * from emp where empno = ??; //会一行一行对比查
+添加索引后，将表中数据建成二叉树形式，使得查找次数大幅度降低（查找条件要用到了索引）
+主键索引，唯一索引，普通索引，全文索引
+
+
+a.主键索引（字段不能重复）
+一张表有且只有一个主键，主键索引效率做高
+一般int列作为主键（逻辑主键）
+一般和自增（auto_increment）
+
+b.唯一索引（unique）（字段不能重复）
+唯一索引表中可以有多个，查询效率仅次于主键索引，允许为null，并且null不作为判断
+
+c.普通索引（index）（允许字段重复）（实际开发用的多）
+表中允许多个字段添加普通索引，普通索引允许字段重复，查询效率低于唯一索引
+alter table 表名 add index(列名);
+
+d.全文索引：针对txt类型，大文本搜索--FULLTEXT(列名)
+在5.6以前只有MyISAM存储引擎支持全文索引，5.6以后InnoDB引擎也支持全文索引，默认只支持英文
+
+select * from articles
+	where body like '%database%';
+查看语句的索引等的使用情况：
+(explain select * from articles//explain可以查看你的MySQL语句用到了哪些信息
+	where body like '%database%';)
+使用全文索引;
+select * from 表名
+	where match (全文索引列名) against(要查询的数据)
+
+
+创建主键索引：
+create table user1(id int primary key, name varchar(30)); 
+create table user2(id int, name varchar(30), primary key(id));
+create table user3(id int, name varchar(30)); alter table user3 add primary key(id);
+创建唯一索引：
+create table user4(id int primary key, name varchar(30) unique); 
+create table user5(id int primary key, name varchar(30),unique(name));
+create table user6(id int primary key, name varchar(30)）； alter table user6 add unique(name);
+创建普通索引：
+create table user8(id int primary key,name varchar(20),email varchar(30), index(name);
+create table user9(id int primary key, name varchar(20), email varchar(30)); alter table user9 add index(name);
+create table user10(id int primary key, name varchar(20), email varchar(30)); create index idx_name on user10(name);
+创建全文索引：
+CREATE TABLE articles (
+	id INT UNSIGNED AUTO_INCREMENT NOT NULL PRIMARY KEY,
+	title VARCHAR(200),
+	body TEXT,
+	FULLTEXT (title,body)
+)engine=MyISAM;
+
+创建索引的原则：
+1.比较频繁作为查询条件的字段应该创建索引
+2.唯一性太差的字段不适合单独创建索引，比如性别
+3.更新非常频繁的字段不适合创建索引（频繁改动二叉树结构，时间开销大）
+4.不会出现在where子句的字段不该创建索引
+
+
+查询索引:
+查看当前表中所有的索引信息
+show keys from 表名；
+show index from 表名；
+desc 表名；
+
+
+删除索引：
+alter table 表名 drop primary;
+alter table 表名 drop index 索引名(删除单个索引，索引名就是key_name)
+drop index on 表名（删除表中所有索引）
+
+
+
+
+
+****************************  存储过程  ****************************
+存储过程：
+DELIMITER $$
+CREATE PROCEDURE PROCTtest(p1 INT,IN p2 INT,OUT p3 INT,INOUT p4 INT)
+BEGIN
+SELECT p1,p2,p3,p4;
+SET p1=10+p1;
+SET p2=10+p2;
+SET p3=10+p3;
+SET p4=10+p4;
+END$$
+DELIMITER ;
+注意：DELIMITER后面要有一个空格；IN/OUT/INOUT不指定的话，默认是IN；OUT/INOUT不能传常量，要定义变量再传进去（set @v3=3），看变量（select @v3;）
+
+查看有哪些存储过程：
+select name from mysql.proc where db='bbb' and 'type'='procedure';
+查看存储过程的信息：
+show create procedure PROCTtest;
+删除存储过程：
+drop procedure PROCTtest;
+
+函数和存储过程的区别：存储过程（C） 函数（H）
+C用于实现复杂的过程比如插入数据，H用于实现针对性的具体是逻辑比如根据分类名称查找分类ID；
+H只能用IN类型，而C的话IN/OUT/INOUT三种都可以；
+H只能返回一个变量，而C可以返回多个；
+H要有返回结果，要有return，C不能用return而是用参数来返回结果；
+H通常在函数语句中调用，存储过程通常是作为一个独立的部分来执行；
+H保证数据库的安全，影响数据库的性能。
+
+DELIMITER $$
+CREATE PROCEDURE PROC4()
+begin
+declare i int;
+set i=5;
+while i<10000 do
+insert into stu values(i,concat('index',i));
+set i=i+1;
+end while;
+end;
+$$
+DELIMITER ;
+
+
+事务：（ACID）（必考）       （转账，减钱和加钱，必须同时成功或失败）
+事务是由一组sql语句组成，这一组语句存在相关性，这一组语句要么全部成功，要么全部失败。
+只有InnoDB支持事务。
+
+1.开始一个事务
+start transaction;
+
+2.创建保存点
+savepoint 保存点名；
+
+3.事务回滚
+rollback to 保存点名;
+a.当回滚到先发生的保存点时，无法再回到后发生的保存点
+b.当事务提交后，无法回滚
+
+4.事务提交
+commit;
+
+5.隔离级别
+当有多个客户端开启各自事务同时操纵同一张表时，进行隔离操作。
+
+*脏读：当一个事务正在访问数据，并且对数据做了修改，而事务还未提交时，另一个事务能访问到此数据，就叫脏读。(读了没提交的数据)
+*不可重复读：当一个事务A重复读取表中数据时（此时未提交），由于另一个事务B修改表中数据并且提交事务，造成的事务A读取到不同的数据。
+*幻读：当一个事务A重复读取表中数据时（此时未提交），由于另一个事务B增加或者删除数据并且提交事务，造成的事务A读取到不同的数据。
+（不可重复读的重点是修改：同样的条件, 你读取过的数据,再次读取出来发现值不一样了 幻读的重点在于新增或者删除：同样的条件, 第1次和第2次读出来的记录数不一样）
+
+查询MySQL事务隔离级别：
+select @@tx_isolation;
+设置事务的隔离级别：（不推荐）-针对当前用户；
+set session transaction isolation level 四种级别；
+mysql默认的隔离级别是可重复读,一般情况下不要修改
+ 
+
+
+
+6.事务的ACID特性
+A：原子性
+事务是一个不可分割单位，事务中的操作要么全部发生，要么都不发生。
+C：一致性
+事务都是从一个一致性状态到另一个一致性状态。保持系统始终处于一致状态。
+I:隔离性
+当多个用户并发访问数据库时，每个用户的事务不会被其他事务操作的数据干扰
+D：持久性
+事务一旦提交，对数据库的修改就是永久的。
+
+
+
+3。视图view  （简化查询手段），安全性考虑
+视图是一个虚拟的表。视图内容由查询定义。
+视图的数据变化会影响到基表，基表数据也会影响视图
+
+
+创建视图语法：
+create view 视图名
+	as select 语句；
+
+视图与数据表的区别：
+1.数据表要占用磁盘空间，视图不需要。
+2.视图不能添加索引。
+3.视图可以简化查询
+
+
+
+用户管理：
+[data pro]
+
+增删改查
+查询！！！
+事务概念，ACID，没有隔离级别发生的三大现象
+

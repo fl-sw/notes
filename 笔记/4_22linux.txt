@@ -1,0 +1,87 @@
+共享内存创建打开：
+int shmget(Key_t key,   //123
+		size_t size,   //共享内存段的大小，系统会选择4K的倍数
+		iNT shmflg）   //IPC_CREAT|0644权限
+
+Key_t ftok(const char *pathname,int proj_id);
+
+< ipcs > < ipcs -m > < umask >
+
+挂载
+void *shmat(int shmid,
+	 const void *shmaddr ,	//NULL
+		int shmflg)   //0 
+//返回挂载在虚拟地址空间的地址
+
+
+卸载
+int shmdt(const void *shmaddr);  //参数是shmat返回的地址
+
+
+删除
+ipcrm -M key
+int shmctl(id , IPC_RMID ,0);
+
+
+信号量（集）
+创建
+int semget(key_t key,
+		int nsems,   //信号量的个数
+		int semflg);	//IPC_CREAT|0644    0
+删除
+ipcrm -S key
+int semctl(id,0,IPC_RMID);
+
+设置信号量的初值
+int semctl(int semid,
+	int semnum, //第几个信号量   0
+	itn cmd,   //SETVAL
+	....)	/ /semun的值
+
+获得信号量当前值
+int semctl(int semid,
+	itn semnum,	//获得第几个信号量的当前值
+	itn cmd,)	//GETVAL
+//返回值就是信号量的当前值
+
+PV操作：
+int semop(int senid,
+	struct sembuf *sops,	//数组
+	unsigned nsops);	//数组大小
+struct sembuf
+{
+	unsigned short sem_num;	//要操作第几个信号量	·、
+
+	short sem_op;	  0//P操作 -1   V操作 1
+	short sem_flg;	//0
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

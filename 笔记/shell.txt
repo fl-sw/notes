@@ -1,0 +1,191 @@
+解释非编译
+弱类型
+命令批处理
+
+#！/bin/bash (#!叫蛇棒)
+
+
+bash test.sh
+chmod +x test.sh    ./test.sh 
+
+bash创建子进程，在子进程中exec新bash,将.sh文件交给新bash，然后在新bash中再一行一行进行解释命令，同样的新bash中也会创建孙子bash.(跑起来的是解释器 )
+
+cd 会影响交互式shell，这样的命令叫做内建命令（内建命令不创建子进程）
+内建命令是bash内的一个函数
+
+.    也是一条命令（让父bash亲自解释命令）
+source    与 . 命令有同样的效果  （.或者source可以使配置后立即生效）
+
+
+myint=1234
+echo myint		直接打印除myint这个字符串
+echo $myint       提取myint的内容 也就是1234
+${str}            花括号用来界定字符串变量名的界限
+
+readonly 相当于c中的const
+unset    删除一个已定义的变量
+
+
+本地变量在子进程中不可见，环境变量可以，环境变量具有全局属性
+export 设为环境变量
+unset	 取消设置
+env    查看环境变量
+
+ .  source  cd  echo  都是内建命令
+
+字符串拼接：1.写在一起  2.+=
+
+encho ${#str}			打印出字符串的长度
+
+
+
+
+通配符  
+*	匹配0个或多个字符
+?	匹配一个任意字符（一个，如果是两个字符就匹配不上）
+[]	匹配方括号中的任意一个字符的一次出现
+通配符是由shell解释的，比如 ls file[1-5] 则传给ls的就是file1 ... file5
+
+(（ i++ ）)		双圆括号里，可以当算术运算，完全类c
+运算结果要赋给一个变量，必须加$符号
+
+
+data +%y:%m:%d
+
+导引号 `
+命令代换
+mydata=`data +%y:%m:%d`  导引号内的命令结果放进变量里 或者
+mydata=$(data +%y:%m:%d)  
+
+
+touch  ./-file		(touch -file文件不行，touch /-file也不行)
+rm -- -file 
+
+单引号/双引号
+双引号里的命令会被解释；单引号里的字符串就是字符串的内容，命令不解释
+	BDJD
+
+
+which [
+
+read x							输入一个数，显示出来
+echo $x
+
+read x							输入一个数 看是否等于100
+test $x -eq 100
+echo $？                                  打印最近执行命令的退出码
+
+整数比较  -eq 相等  -ne不等   -lt小于  -gt大于   -le小于等于   -ge大于等于
+字符串比较  "X$str" == "Xstring"    (双等号单等号都可以)
+
+[  		左中括号命令,左中括号是命令，右中括号是参数
+[ "X$str" == "Xstring" ]
+
+左中括号能做的 test 也能做
+
+判定字符床是否为空
+[ -z "$str" ]
+-z表示为空，-n表示不为空
+shell中非0为假  因为用命令的退出码来判定
+-f 判断是否为普通文件
+-d 判断是否为目录
+-c 判断是否是字符设备
+-b 块设备
+-l 链接文件
+-p
+
+
+！ 	取反
+-a 	and逻辑与
+-o 	or逻辑或
+
+
+read x
+if [ $x -eq 100 ]
+then
+	echo "success"
+elif[ $x -eq 200 ]
+then 
+	echo "success"
+fi
+
+
+
+
+**************************************************************
+[ ]&&{  }
+
+case $1 in   
+	'start' | -s | -S )           【或者start | -[Ss]】【[Ss]tart】
+	        echo "start ... done"
+	 ;;   
+	 'stop' )
+	        echo "stop ... done"
+        ;;    
+	'restart' )
+	        echo "restart ... done"
+    ;; 
+	'status' )
+	        echo "status ... done" 
+   ;;    
+	* )       
+		 echo "default"
+  ;; 
+esac 
+
+
+for(( ))
+do
+	something
+done
+
+for i in 1 2 3 4
+do 
+	echo $i
+done
+
+i=0
+while[ $i -le 10]          或者【until [$i -gt 10]】
+do
+	something
+done
+
+死循环
+while true  【until false】
+for(( ; ; ))
+: 命令 【运行时永远为真，退出码永远为0】
+
+shell脚本不准出现空的代码块【】】【】【】【】【】【】【】【】【】【
+
+
+
+多行命令写在一行，需要加分号
+
+
+
+$$ 【子bash的pid】
+
+
+
+shift命令：
+shift 1【 将命令行参数左移，$0不变，$2移到$1,$1丢弃】
+
+把脚本当命令，函数当命令或者小脚本
+
+$( )命令代换，（（））算术代换
+
+
+调试：
+bash -n sh.sh  【检查语法】【脚本没有跑起来】
+bash -x sh.sh  【将命令也打印出来，而不仅仅是运行结果】
+
+数组：（不支持多维数组）
+echo ${array[@]}   【整体打印出来，@也可以是*】
+echo ${#array[@]}  【打印数组元素个数，数组长度】
+
+for i in ${array[*]}
+do
+	echo $i
+done
+
+find a > file 2>&1 【标准错误重定向到标准输出】

@@ -1,0 +1,47 @@
+getenv("name");
+putenv("key=value"); //中间不能有空格
+
+getpid()总是返回成功；
+
+setjmp() / longjmp()  //c中的异常处理
+
+do{ }while(0) //once
+
+父子进程 虚拟内存地址相同，物理不同，独立的4G内存空间   （* * 写时拷贝 **）
+
+vfork() // 1.（写时都不拷贝内存空间）与父进程共享地址空间。
+           2. 保证子进程先运行，在调用exec或exit()之后父进程才能被调度运行（必须调用）。
+           3. 任何一个系统上实现的vfork或多或少有问题，不要使用。
+
+awk '{printf("%d\n",a);}' //（shell脚本）
+
+
+int main()
+{	
+	//二叉式
+	pid_t pid = fork();
+	if(pid > 0)     //父进程来创建进程
+		fork();
+
+	//链式
+	pid_t pid = fork();
+	if(pid == 0)    //子进程来创建进程
+		fork();
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

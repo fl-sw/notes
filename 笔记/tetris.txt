@@ -1,0 +1,25 @@
+ioctl();
+SOMAXCONN //小凳子
+粘包问题：xml格式，头部约定数据格式。。。
+time_wait一般停留75s；？？
+3G/stack_size 线程个数
+文件描述符不够-》提前预留一个文件描述符-》换一个 
+SCTP??
+网络执法官？？
+
+链路层：负责相连两节点间的通信
+
+time()获取的时间》1970年。。秒数
+gettimeofday()---》微秒级别精度（线程安全的）
+例:	struct timeval begin;
+ 	gettimeosday(&begin,NULL);
+	struct timeval end;
+ 	gettimeosday(&end,NULL);
+	int ret = (end->tv_sec - begin->tv_sec)*1000 + (end->tv_usec - begin->tv_usec)/1000;
+
+difftime()//系统的计算时间差，以秒为单位
+
+struct hostent *gethostbyname(const char *name)//通过域名查ip,DNS解析
+要加头文件netdb。h
+
+PF_INETT表示协议家族，AF_INET表示地址家族

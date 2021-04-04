@@ -1,0 +1,313 @@
+
+*********************************（5.11）****************************
+
+1.信号
+	Linux系统相应某些状况而产生的事件，进程在接受到信号后会采取相应的动作
+
+	哪些条件会产生信号？
+		1.键盘事件 CTRL+C   CTRL+\
+		2.非法内存
+		3.非法指令
+	
+	罗列所有信号 kill -l
+
+SIGHUP关终端
+SIGINT  ctrl+c
+SIGQUIT ctrl+\
+SIGILL	非法指令
+SIGRAP陷入内核
+SIGABRTabort函数
+SIGBUS两个设备间信号断掉（pipe mmap socket 最简单最高效最稳定）
+SIGFPE浮点异常
+SIGKILL杀死进程
+SIGUSR1用户自定义
+SIGPIPE管道破裂
+SIGALRM闹钟
+SIGCHLD子进程死了（（变僵尸进程）（忽略）），给父进程发信号
+SIGSEGV段错误
+SIGIO异步io
+
+
+	信号缺省执行动作：
+		man 7 signal
+		
+2.信号处理方式
+	1.忽略 (SIGKILL SIGSTOP 不能忽略)   (kill -SIGKILL -9)
+	（ARP欺骗）
+	2.捕获并处理 （SIGKILL SIGSTOP 不能被捕获）
+	3.缺省处理
+
+3.注册信号
+	（自己处理信号）
+	void(*signal（int signum,void(*pf)(int)））（int）  //回调函数来处理
+
+	typdef void (*sighandler_t)(int)
+	sighandler_t signal(int signum,sighandler_t handler);
+			1.自己定义函数
+			2.SIG_IGN	
+			3.SIG_DFL
+				#define SIG_IGN ((sighandler_t)0)
+				#define SIG_DFL ((sighandler_t)1)
+				#define SIG_ERR ((sighandler_t)-1)
+			当信号抵达，保存当前现场，转去执行信号处理函数，				执行完毕，恢复现场，继续执行
+
+			父进程注册的信号处理方式，子进程继承过去
+
+4.信号的分类
+	可靠信号/不可靠信号
+	实时信号/非实时信号
+
+	1.不可靠信号（1--31）
+		1.Linux的信号处理继承自unix，早期的Unix当信号处理函数完毕，该	信号恢复成缺省处理动作，（Linux已经改进）
+		2.信号不排队，会出现信号丢失现象
+
+		（1--31 都是不可靠信号  34--64 会排队，不会丢失）
+
+	2.可靠信号（34--64）
+		不会出现信号丢失
+	
+	3.非实时信号
+		不可靠信号都是非实时信号
+
+	4.实时信号
+		可靠信号都是实时信号
+
+***********************************（5.13）********************************
+
+
+5.发送信号
+	kill -信号值 pid
+	killall -信号值 给所有叫name的进程发送信号
+	如果不给信号值，缺省是15号信号
+
+	kill(pid_t pid,int signum)   //#include <signal.h>
+	pid > 0: 明确的说给pid这个进程发送信号
+	pid== 0: 给本进程组的所有进程发送信号
+	pid==-1: 给有权发送的所有进程发送信号
+	pid <-1: 给|pid|进程组的任何一个进程发送信号
+
+	（管道连接起来的进程，属于同一个进程组，第一个进程id是进程组的id）
+	（fork来的进程，属于同一个进程组，进程组id是父进程id）
+	（CTRL C 实际上是发给前台进程组了，没法发给后台进程组）
+	（sleep 100 &  以后台方式启动进程）
+	（进程组也叫作业）
+	（后台进程组怎么看？ <jobs>查看后台作业）
+	（《fg》 将后台作业拿到前台；《fg %作业号》 缺省是第一个作业）
+
+
+	raise(int signum);		       //给自己发信号
+	killpg(int pgid,int signum);   //给pgid进程组发送信号
+
+
+	让一个进程暂停，我给它发信号后，再继续运行。
+	psuse()   //将当前进程置为可中断的睡眠状态，然后调用schedule(），使	  	         Linux进程调度算法找到另一个进程来执行。
+	pause是调用者进程一直挂起，直到有信号被捕获。
+	     当信号处理函数执行完毕之后再返回。
+
+6.常见信号的处理
+
+SIGALARM
+
+SIGCHLD
+
+unsigned int alarm(unsigned int seconds); //时间以秒为单位
+					//如果参数是0，则是关掉闹钟（清除信号）
+
+定时器函数：
+int setitimer(int which,   //ITIMER_REAL大多数情况用这个
+		const struct inimaerval *new_value,
+		struct inimerval *old_value);
+
+struct itimerval{
+	struct timeval it_interval;  //以后每次间隔时间
+	struct timeval it_value;   //第一次启动时间
+}；
+struct timeval{
+	long tv_sec;  //秒
+	long tv_usec;  //微秒
+};
+
+
+
+<read>超时功能读取
+
+
+（（（（（（（（（（（（（（（（（（（（（（（（（（（
+printf("\033[y;xH") //printf("\033[10;20H");//定位在（20，10）坐标画
+printf("\033[35m\033[40m[]")；  //  \033[3xm 代表字体的前景颜色
+					  //  \033[4xm 代表字体的背景颜色
+printf("\033[0m");//清除当前设置   
+
+printf("\033[?25l");//清光标   （ VT100 编码  在Linux和Unix下用）
+
+））））））））））））））））））））））））））））
+
+
+7.可重入和不可重入函数
+	（信号处理函数中，不能调用malloc，free函数-----不安全）
+
+不可重入：（条件）	
+	1.函数内部调用malloc或free
+	2.调用了标准IO
+	3.使用了静态变量
+
+查看哪些函数是可重入的： 《man 7 signal》
+
+
+8.信号的内核表示
+	信号抵达（delivery）：执行信号的处理动作称为信号抵达
+	信号未决（pending）:从信号产生到信号抵达之间的状态称之为信号未决
+	信号阻塞（blocking）:
+
+	//从用户空间设置的集合拷到内核
+	sigprocmask( int how,        //SIG_BLOCK : mask = mask | set
+						//SIG_UNBLOCK：mask= mask & ~set
+						//SIG_SEMASK：mask = set
+
+		//叫做信号集
+		const sigset_t *set, //
+		（//sigemptyset(sigset_t *set) 清空信号集
+			{memset(set,0,sizeof(sigset_t))}
+		    sigaddset(sigset_t *set,int signum) 加入某信号）
+		   	{*set |= 1 << (signum - 1)}
+		    sigdelset(sigset_t *set,int num) 去除某信号
+			{*set &= ~(1 << (num - 1))]
+		    sigismember(sigset_t *set,int num) 某信号在不在
+			{return *set & 1<< (num - 1)}
+
+		sigset_t *oldset);    //返回旧的信号屏壁集合
+
+	//获得内核未决信号集
+	sigpending(sigset_t *set);
+
+
+	//pause（）加强版 
+	int sigsuspend(const sigset_t *mask);//相当pause()+信号屏蔽
+		此函数内设置的信号会被屏蔽，不在这里头的信号才能唤醒这个加强版		pause（）	
+
+
+ 
+9.竞态
+	由于时间原因导致的竞争
+
+
+
+*********************（ 5_18 ）******************************************************
+
+Makefile中  -I.     本应是“”的头文件写为<>还会到当前路径找
+
+linux/unix 系统编程手册 ：编程实践教程
+Linux二进制
+Ethereal 抓包 
+
+signal(SIGCHID,IGN)明确说明忽略后，操作系统让子进程死后不出现僵尸，
+		默认是忽略的，但是会出现僵尸态
+
+int sigaction(    int signum,   // 信号
+	const struct sigactionn *act,  //信号处理函数
+	struct sigaction *oldact );  // NULL
+struct sigaction{
+	void  （*sa_handler）(int );
+	sigset sa_mask;  //信号处理函数执行期间的信号屏蔽
+	int sa_flags; // 0     SA_RESTART   信号处理函数执行完了，不会恢复成默认处理方式    
+}
+信号函数执行期间，再来一个本信号，屏蔽
+
+
+进程组/作业/会话
+
+ps -ef | grep sleep
+ps axj | grep sleep
+killall sleep
+fg   ctrl+z
+
+线路规程
+
+ftp 协议 传文件
+
+
+守护进程（windows的服务）（不需要终端）
+
+1.//创建子进程，父进程exit（）；
+	fork（）；
+2.//新启动一个会话，不能用以前的终端；不能由进程组组长调用
+	int setsid（ void ）；
+3.//for(int i=0;i<255;i++) close(i);  （创建守护进程而打开的文件都没用了，关闭之）
+     /dev/null       //空洞（放入的东西都消失）
+4..//将当前路径改成根路径
+    chdir();  //  cd
+5.干事情
+   （错误信息打印到日志文件里）
+
+//将以上几步搞成了个函数，如下：
+daemon(   int nochdir, // 是0 ，更改当前路径到根； 非0， 不更改  
+	int noclose);  // 是0 ，将标准输入输出出错重定向到 /dev/null，非0 ，不重定向
+
+nohup //？？？？？？终端关了，命令不会退出
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
