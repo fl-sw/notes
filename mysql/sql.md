@@ -48,7 +48,7 @@ ___
     * 更新记录
     * 删除记录
     * 查询记录
-      * 单表查询 
+      * 单表查询
       * 多表查询
 * DCL数据控制语言：(Data Control Language)
     * commit
@@ -518,7 +518,195 @@ select job,count(*) as zs,avg(sal) from emp group by job;
   select dept.deptno,dname,ename from dept left join emp on dept.deptno=emp.deptno; 
   ```
 -------------------------
+-----------------------------------------------
+一。索引：提高海量数据查询速度
+select * from emp where empno = ??; //会一行一行对比查
+添加索引后，将表中数据建成二叉树形式，使得查找次数大幅度降低（查找条件要用到了索引）
+主键索引，唯一索引，普通索引，全文索引
 
+
+a.主键索引（字段不能重复）
+一张表有且只有一个主键，主键索引效率做高
+一般int列作为主键（逻辑主键）
+一般和自增（auto_increment）
+
+b.唯一索引（unique）（字段不能重复）
+唯一索引表中可以有多个，查询效率仅次于主键索引，允许为null，并且null不作为判断
+
+c.普通索引（index）（允许字段重复）（实际开发用的多）
+表中允许多个字段添加普通索引，普通索引允许字段重复，查询效率低于唯一索引
+alter table 表名 add index(列名);
+
+d.全文索引：针对txt类型，大文本搜索--FULLTEXT(列名)
+在5.6以前只有MyISAM存储引擎支持全文索引，5.6以后InnoDB引擎也支持全文索引，默认只支持英文
+
+select * from articles
+	where body like '%database%';
+查看语句的索引等的使用情况：
+(explain select * from articles//explain可以查看你的MySQL语句用到了哪些信息
+	where body like '%database%';)
+使用全文索引;
+select * from 表名
+	where match (全文索引列名) against(要查询的数据)
+
+
+创建主键索引：
+create table user1(id int primary key, name varchar(30)); 
+create table user2(id int, name varchar(30), primary key(id));
+create table user3(id int, name varchar(30)); alter table user3 add primary key(id);
+创建唯一索引：
+create table user4(id int primary key, name varchar(30) unique); 
+create table user5(id int primary key, name varchar(30),unique(name));
+create table user6(id int primary key, name varchar(30)）； alter table user6 add unique(name);
+创建普通索引：
+create table user8(id int primary key,name varchar(20),email varchar(30), index(name);
+create table user9(id int primary key, name varchar(20), email varchar(30)); alter table user9 add index(name);
+create table user10(id int primary key, name varchar(20), email varchar(30)); create index idx_name on user10(name);
+创建全文索引：
+CREATE TABLE articles (
+	id INT UNSIGNED AUTO_INCREMENT NOT NULL PRIMARY KEY,
+	title VARCHAR(200),
+	body TEXT,
+	FULLTEXT (title,body)
+)engine=MyISAM;
+
+创建索引的原则：
+1.比较频繁作为查询条件的字段应该创建索引
+2.唯一性太差的字段不适合单独创建索引，比如性别
+3.更新非常频繁的字段不适合创建索引（频繁改动二叉树结构，时间开销大）
+4.不会出现在where子句的字段不该创建索引
+
+
+查询索引:
+查看当前表中所有的索引信息
+show keys from 表名；
+show index from 表名；
+desc 表名；
+
+
+删除索引：
+alter table 表名 drop primary;
+alter table 表名 drop index 索引名(删除单个索引，索引名就是key_name)
+drop index on 表名（删除表中所有索引）
+
+
+
+
+
+****************************  存储过程  ****************************
+存储过程：
+DELIMITER $$
+CREATE PROCEDURE PROCTtest(p1 INT,IN p2 INT,OUT p3 INT,INOUT p4 INT)
+BEGIN
+SELECT p1,p2,p3,p4;
+SET p1=10+p1;
+SET p2=10+p2;
+SET p3=10+p3;
+SET p4=10+p4;
+END$$
+DELIMITER ;
+注意：DELIMITER后面要有一个空格；IN/OUT/INOUT不指定的话，默认是IN；OUT/INOUT不能传常量，要定义变量再传进去（set @v3=3），看变量（select @v3;）
+
+查看有哪些存储过程：
+select name from mysql.proc where db='bbb' and 'type'='procedure';
+查看存储过程的信息：
+show create procedure PROCTtest;
+删除存储过程：
+drop procedure PROCTtest;
+
+函数和存储过程的区别：存储过程（C） 函数（H）
+C用于实现复杂的过程比如插入数据，H用于实现针对性的具体是逻辑比如根据分类名称查找分类ID；
+H只能用IN类型，而C的话IN/OUT/INOUT三种都可以；
+H只能返回一个变量，而C可以返回多个；
+H要有返回结果，要有return，C不能用return而是用参数来返回结果；
+H通常在函数语句中调用，存储过程通常是作为一个独立的部分来执行；
+H保证数据库的安全，影响数据库的性能。
+
+DELIMITER $$
+CREATE PROCEDURE PROC4()
+begin
+declare i int;
+set i=5;
+while i<10000 do
+insert into stu values(i,concat('index',i));
+set i=i+1;
+end while;
+end;
+$$
+DELIMITER ;
+
+
+事务：（ACID）（必考）       （转账，减钱和加钱，必须同时成功或失败）
+事务是由一组sql语句组成，这一组语句存在相关性，这一组语句要么全部成功，要么全部失败。
+只有InnoDB支持事务。
+
+1.开始一个事务
+start transaction;
+
+2.创建保存点
+savepoint 保存点名；
+
+3.事务回滚
+rollback to 保存点名;
+a.当回滚到先发生的保存点时，无法再回到后发生的保存点
+b.当事务提交后，无法回滚
+
+4.事务提交
+commit;
+
+5.隔离级别
+当有多个客户端开启各自事务同时操纵同一张表时，进行隔离操作。
+
+*脏读：当一个事务正在访问数据，并且对数据做了修改，而事务还未提交时，另一个事务能访问到此数据，就叫脏读。(读了没提交的数据)
+*不可重复读：当一个事务A重复读取表中数据时（此时未提交），由于另一个事务B修改表中数据并且提交事务，造成的事务A读取到不同的数据。
+*幻读：当一个事务A重复读取表中数据时（此时未提交），由于另一个事务B增加或者删除数据并且提交事务，造成的事务A读取到不同的数据。
+（不可重复读的重点是修改：同样的条件, 你读取过的数据,再次读取出来发现值不一样了 幻读的重点在于新增或者删除：同样的条件, 第1次和第2次读出来的记录数不一样）
+
+查询MySQL事务隔离级别：
+select @@tx_isolation;
+设置事务的隔离级别：（不推荐）-针对当前用户；
+set session transaction isolation level 四种级别；
+mysql默认的隔离级别是可重复读,一般情况下不要修改
+ 
+
+
+
+6.事务的ACID特性
+A：原子性
+事务是一个不可分割单位，事务中的操作要么全部发生，要么都不发生。
+C：一致性
+事务都是从一个一致性状态到另一个一致性状态。保持系统始终处于一致状态。
+I:隔离性
+当多个用户并发访问数据库时，每个用户的事务不会被其他事务操作的数据干扰
+D：持久性
+事务一旦提交，对数据库的修改就是永久的。
+
+
+
+3。视图view  （简化查询手段），安全性考虑
+视图是一个虚拟的表。视图内容由查询定义。
+视图的数据变化会影响到基表，基表数据也会影响视图
+
+
+创建视图语法：
+create view 视图名
+	as select 语句；
+
+视图与数据表的区别：
+1.数据表要占用磁盘空间，视图不需要。
+2.视图不能添加索引。
+3.视图可以简化查询
+
+
+
+用户管理：
+[data pro]
+
+增删改查
+查询！！！
+事务概念，ACID，没有隔离级别发生的三大现象
+
+---------------------------------------------------
 
 
 
