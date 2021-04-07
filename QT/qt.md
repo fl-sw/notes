@@ -39,6 +39,7 @@ https://www.cnblogs.com/schips/p/12537360.html
 
 * 槽:slots
     * 与信号函数不同，槽函数必须自己完成实现代码
+    * 可以有参数,可以重载
 
 * 触发:emit 
     * 发射信号
@@ -51,4 +52,20 @@ https://www.cnblogs.com/schips/p/12537360.html
     * 使用 emit 在恰当的位置发送信号；
     * 使用QObject::connect()函数连接信号和槽。 
 
+* 当信号和槽发生重载时
+    * 需要用定义函数指针来作为connect()的参数
+    * 定义与槽相同类型的函数指针，而且指针要标明 域名；
+    * ```cpp
+        void(Teacher:: *noPraTeacherSignal)() = &Teacher::hungry;
+	    void(Teacher:: *isPraTeacherSignal)(QString) = &Teacher::hungry;
+
+	    void(Student:: *noPraStudentSignal)() = &Student::treat;
+	    void(Student:: *isPraStudentSignal)() = &Student::treat;
+        ```
+
+
+
+* QString 转成 char* 的方法
+    * QString 先转成 QByteArray （用toUtf8()方法） 再转成char* （用data()方法）；
+    * `qDebug() << "this is my" << str.toUtf8().data();`
 
