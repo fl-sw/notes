@@ -69,3 +69,5 @@ https://www.cnblogs.com/schips/p/12537360.html
     * QString 先转成 QByteArray （用toUtf8()方法） 再转成char* （用data()方法）；
     * `qDebug() << "this is my" << str.toUtf8().data();`
 
+* 断开信号连接
+    * disconnect(); //参数和连接的参数一摸一样
