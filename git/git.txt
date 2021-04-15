@@ -11,7 +11,7 @@ git config --global ... 		//对当前用户所有仓库有效
 git config --system ...		 //system对系统所有登录的用户有效
 
 git config --list  //可以显示当前的设置
-git config --list --local  //在git仓库的文件夹下才可以使用
+git config --list --local  //
 git config --list --global
 git config --list --system
 

@@ -51,6 +51,9 @@ https://www.cnblogs.com/schips/p/12537360.html
     * 槽函数是普通的成员函数，作为成员函数，会受到 public、private、protected 的影响；
     * 使用 emit 在恰当的位置发送信号；
     * 使用QObject::connect()函数连接信号和槽。 
+    * 一个信号可以对应多个槽（但是槽的执行顺序不可控）
+    * N个信号可以对应一个槽
+    * 信号还可以连接信号
 
 * 当信号和槽发生重载时
     * 需要用定义函数指针来作为connect()的参数
@@ -63,6 +66,9 @@ https://www.cnblogs.com/schips/p/12537360.html
 	    void(Student:: *isPraStudentSignal)() = &Student::treat;
         ```
 
+* 信号和槽的参数必须一一对应
+    * 类型要一一匹配
+    * 信号的参数个数可以多于槽的参数个数
 
 
 * QString 转成 char* 的方法
@@ -71,3 +77,10 @@ https://www.cnblogs.com/schips/p/12537360.html
 
 * 断开信号连接
     * disconnect(); //参数和连接的参数一摸一样
+
+* lambda表达式
+    * `[](){};` 
+    * 方括号是函数对象参数；标识一个lambda表达式的开始
+    * []()mutable{}; //加了mutable后，在大括号中修改的就是传进来的参数的拷贝，而不是参数本身。
+    * 返回值：`int ret = []()->{return 100;}();`
+    * 可以在connect()的第四个参数的地方，写lambda表达式，在lambda表达式中调用想调用的函数（比如发射信号，调用槽函数）
