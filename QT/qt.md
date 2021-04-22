@@ -84,3 +84,11 @@ https://www.cnblogs.com/schips/p/12537360.html
     * []()mutable{}; //加了mutable后，在大括号中修改的就是传进来的参数的拷贝，而不是参数本身。
     * 返回值：`int ret = []()->{return 100;}();`
     * 可以在connect()的第四个参数的地方，写lambda表达式，在lambda表达式中调用想调用的函数（比如发射信号，调用槽函数）
+
+* 对话框
+    * 模态对话框
+        窗口弹出后，不可以对其他窗口进行操作，阻塞
+        dialog.exec() 
+    * 非模态对话框 
+        窗口弹出后，可以对其他窗口进行操作
+        dialog.show()
