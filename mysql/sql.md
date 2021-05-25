@@ -622,6 +622,7 @@ H要有返回结果，要有return，C不能用return而是用参数来返回结
 H通常在函数语句中调用，存储过程通常是作为一个独立的部分来执行；
 H保证数据库的安全，影响数据库的性能。
 
+```
 DELIMITER $$
 CREATE PROCEDURE PROC4()
 begin
@@ -634,7 +635,7 @@ end while;
 end;
 $$
 DELIMITER ;
-
+```
 
 事务：（ACID）（必考）       （转账，减钱和加钱，必须同时成功或失败）
 事务是由一组sql语句组成，这一组语句存在相关性，这一组语句要么全部成功，要么全部失败。
@@ -644,7 +645,7 @@ DELIMITER ;
 start transaction;
 
 2.创建保存点
-savepoint 保存点名；
+savepoint 保存点名
 
 3.事务回滚
 rollback to 保存点名;
@@ -805,3 +806,34 @@ yy as (select id, name, math-chinese as total from student),
 tt as (select id, name, math+chinese total from student)
 select tt.total-yy.total from yy,tt where yy.id = tt.id;	
 
+
+
+```
+
+create table info(id int,name varchar(10),text varchar(30));
+create unique index idx_id_name on info(id,name);
+insert into info(id,name,text) values(1,'rose','hello world');
+insert into info(id,name,text) values(1,'rose','what is this');
+
+
+
+mysql> create table info(id int,name varchar(10),text varchar(30));
+Query OK, 0 rows affected (0.14 sec)
+
+mysql> create unique index idx_id_name on info(id,name);
+Query OK, 0 rows affected (0.03 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> insert into info(id,name,text) values(1,'rose','hello world');
+Query OK, 1 row affected (0.01 sec)
+
+mysql> insert into info(id,name,text) values(1,'rose','what is this');
+ERROR 1062 (23000): Duplicate entry '1-rose' for key 'idx_id_name'
+
+mysql> insert into info(id,name,text) values(1,'jack','what is this');
+Query OK, 1 row affected (0.05 sec)
+
+mysql>
+
+
+```
