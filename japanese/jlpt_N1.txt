@@ -832,15 +832,45 @@ A～てからというもの、B
 
 @echo off
 
+set week=%DATE:~-1%
 
-rem get weekNum
+if %week%==日 goto :open
+goto :ex
 
-set week=%DATE:~-3%
+:open
+echo success
+pause
+goto :ex
 
+:ex
 echo today is %week%
+pause
+exit
 
 
 
+
+
+-----------------------------------------------
+set week=%DATE:~-1%
+if %week%==һ goto :open
+
+
+:openqq
+echo zheshier
+pause
+goto :ex
+
+:open
+echo dangrankeyi
+C:\Users\30885\Desktop\a.bat
+pause
+goto :ex
+
+ 
+:ex
+exit
+-----------------------------------------------
 
 
 
