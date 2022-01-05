@@ -94,3 +94,7 @@ https://www.cnblogs.com/schips/p/12537360.html
     * 非模态对话框 
         窗口弹出后，可以对其他窗口进行操作
         dialog.show()
+	
+
+https://www.freesion.com/article/3928980650/
+
