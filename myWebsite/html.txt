@@ -1,0 +1,49 @@
+<h1>到<h6>的字号大小分别是6号到1号
+
+当显示页面时，浏览器会移除源代码中多余的空格和空行。所有连续的空格或空行都会被算作一个空格。需要注意的是，HTML 代码中的所有连续的空行（换行）也被显示为一个空格。
+<pre>标签中的空格会被一个一个的正确解读
+
+CSS 可以通过以下方式添加到HTML中:
+１．内联样式- 在HTML元素中使用"style" 属性      
+    <p style="color:blue;margin-left:20px;">这是一个段落。</p>
+２．内部样式表 -在HTML文档头部 <head> 区域使用<style> 元素 来包含CSS
+    <head>
+        <style type="text/css">
+            body {background-color:yellow;}
+            p {color:blue;}
+        </style>
+    </head>
+３．外部引用 - 使用外部 CSS 文件
+    <head>
+        <link rel="stylesheet" type="text/css" href="mystyle.css">
+    </head>
+
+大多数 HTML 元素被定义为块级元素或内联元素。
+块级元素在浏览器显示时，通常会以新行来开始（和结束）。
+ <div> 元素是块级元素，它可用于组合其他 HTML 元素的容器。
+ <span> 元素是内联元素，可用作文本的容器
+
+
+html元素和css元素的耦合：
+1.用类名
+    <div class="cities">
+    .cities {
+        background-color:black;
+        color:white;
+        margin:20px;
+        padding:20px;
+    } 
+
+2.用id
+<h1 id="myHeader">My Header</h1>
+#myHeader {
+  background-color: lightblue;
+  color: black;
+  padding: 40px;
+  text-align: center;
+}
+
+
+请始终定义图像尺寸。这样做会减少闪烁，因为浏览器会在图像加载之前为图像预留空间。
+如需显示小于号，我们必须这样写：&lt; 或 &#60;    如需完整的实体符号参考，请访问我们的 HTML 实体符号参考手册。
+<form action="/demo/html/action_page.php" autocomplete="on">自动填写
