@@ -1,0 +1,122 @@
+字符串：单引号或双引号
+布尔值和布尔运算：Ture,False,and,or,not
+None表示空值
+python中有两种除法，/和//前者是浮点运算，后者是地板除（只取整数）
+ord()函数能获取字符的ASCII编码，chr()则是将编码转换为字符
+pyhton中的编码类型是Unicode
+字符串.decode('utf-8') 这一句可以将这个bytes解析为指定编码的字符串
+len()函数可以计算字符串，len('ABC')结果是3，len('中文'.encode('utf-8'))结果是6（一个中文字符占3个字节）
+
+python中的f-string：
+>>> r = 2.5
+>>> s = 3.14 * r ** 2
+>>> print(f'The area of a circle with radius {r} is {s:.2f}')
+The area of a circle with radius 2.5 is 19.62
+上述代码中，{r}被变量r的值替换，{s:.2f}被变量s的值替换，并且:后面的.2f指定了格式化参数（即保留两位小数），因此，{s:.2f}的替换结果是19.62。
+
+
+list
+classmates = ['Michael', 'Bob', 'Tracy']
+len(classmates)可以获取list的元素个数
+.append() .insert() pop(i)
+
+
+tuple元组
+classmates = ('Michael', 'Bob', 'Tracy')
+tuple一旦初始化就不能修改
+
+如果要定义一个只有1个元素的tuple，如果你这么定义：
+>>> t = (1)
+>>> t
+1
+定义的不是tuple，是1这个数！这是因为括号()既可以表示tuple，又可以表示数学公式中的小括号，这就产生了歧义，因此，Python规定，这种情况下，按小括号进行计算，计算结果自然是1。
+所以，只有1个元素的tuple定义时必须加一个逗号,，来消除歧义：
+>>> t = (1,)
+>>> t
+(1,)
+Python在显示只有1个元素的tuple时，也会加一个逗号,，以免你误解成数学计算意义上的括号。
+
+
+if
+elif
+else:
+
+
+while n > 0:
+break
+continue
+
+
+input()读取用户的输入,返回值是字符串类型，如果需要整数，可以用int()函数来进行装换  
+s = input('birth: ')
+birth = int(s)
+
+
+names = ['Michael', 'Bob', 'Tracy']
+for name in names:
+    print(name)
+
+sum = 0
+for x in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]:
+    sum = sum + x
+
+Python提供一个range()函数，可以生成一个整数序列，再通过list()函数可以转换为list。比如range(5)生成的序列是从0开始小于5的整数：
+>>> list(range(5))
+[0, 1, 2, 3, 4]
+
+计算0~100的和
+sum = 0
+for x in range(101)
+    sum += x
+
+
+
+
+dict    :dict全称dictionary，在其他语言中也称为map
+>>> d = {'Michael': 95, 'Bob': 75, 'Tracy': 85}
+>>> d['Michael']
+95
+
+通过in判断key是否存在：
+>>> 'Thomas' in d
+False
+二是通过dict提供的get()方法，如果key不存在，可以返回None，或者自己指定的value：
+>>> d.get('Thomas')
+>>> d.get('Thomas', -1)
+-1
+注意：返回None的时候Python的交互环境不显示结果。
+要删除一个key，用pop(key)方法，对应的value也会从dict中删除：
+>>> d.pop('Bob')
+
+
+函数
+def my_abs(x):
+    if x >= 0:
+        return x
+    else:
+        return -x
+
+
+pass语句什么都不做
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

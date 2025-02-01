@@ -78,3 +78,10 @@ zoomIn/zoomOut：Ctrl + =/Ctrl + -
 # 其他
 
 自动保存：File -> AutoSave ，或者Ctrl+Shift+P，输入 auto
+
+查看WiFi密码：
+netsh wlan show profiles flsw12 key=clear
+
+
+
+

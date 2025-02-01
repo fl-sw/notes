@@ -1,0 +1,53 @@
+1.new的动作
+分三步：
+    1.void* mem = operator new (sizeof(complex))
+    operator new是一个特殊函数，中间有一个空格，这个函数会调用malloc,分配出一块内存
+    2.pc = static_cast<complex*>(mem)
+    将刚才分配到的内存的指针，转换成对应的类型指针
+    3.pc->complex::complex(1,2)
+    调用这个对象指针的构造函数，将值赋进去
+2.delete的动作
+分两步：
+    1.string::~string(ps)
+    先调用析构函数
+    2.operator delete(ps)
+    再调用operator delete这个函数，这个函数内部会调用free
+
+如果类中有指针数据
+    需要注意big three:拷贝构造，拷贝赋值，析构函数
+
+composition 复合
+delegation/composition by reference 委托
+Inheritance 继承
+
+3.类的复合composition关系(有一个，如果是指针指向的话，就不是复合关系，而是委托delegation关系)
+    构造由内向外
+    析构由外向内
+ 类的委托关系的好处
+    一个A类，有一个其他类的指针，这种关系称之为pimpl(ponit to implement) 或者 handle/body
+    A类是接口，可以指向不同的实现类，A类永远不用再编译，这种手法可以称为编译防火墙
+ 继承：
+    继承了函数，实际上是继承了函数的调用权
+
+
+类的静态数据成员，一定要在类外定义一下
+
+转换函数：在类中，定义operator double()函数，没有参数，省略返回值，一般都是const的
+
+explicit:告诉编译器不要暗度陈仓的给我自动转换类型，不要那么自动，一般用于修饰构造函数。其他地方也有，很少。
+
+pointer like ; function like :重载取地址符，解引用符，像指针。重载函数调用符像函数
+
+当一个类既继承了Base类，又组合了其他类的时候，在构造自己的时候，默认是先构造自己的父类再构造组合的成员类。
+析构的时候，在析构自己的时候，先析构组合的成员类，再析构父类。
+
+常量对象        常量函数        ok
+常量对象        非常量函数      no
+非常量对象      常量函数        ok
+非常量对象      非常量函数      ok
+当常量函数和非常量函数同时存在的时候，常量对象只调用常量函数，非常量对象只调用非常量函数
+
+
+new与new[]的区别：
+new[]会分配n个对象的空间，然后在这些空间的前面会多分配4个字节，来存放对象的个数
+
