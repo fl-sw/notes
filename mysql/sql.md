@@ -5,6 +5,28 @@ use d_name;
 create table t_name(id int, name varchar(32), gender varchar(1));
 insert into t_name(id,name,gender) values (1,'rose','m');
 ```
+## 用户管理
+* 改密码
+```sql
+# 切换到mysql数据库
+use mysql;
+#设置密码：password:新密码；user: 用户
+update user set authentication_string=password('123456') where user='root';
+# 刷新MySQL的系统权限相关表
+flush privileges;
+```
+* 设置远程连接
+```sql
+#进入Mysql  -u:指用户； -p指密码
+mysql -u root -p
+Enter password: 密码
+# 切换到mysql数据库
+use mysql;
+#设置user用户远程访问
+GRANT ALL ON *.* TO user@'%' IDENTIFIED BY '123456' WITH GRANT OPTION;
+# 刷新MySQL的系统权限相关表
+flush privileges;
+```
 
 # SQL (Structure Query Language)
 CURD-Create Update Retrieve Delete

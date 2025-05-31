@@ -101,3 +101,7 @@ $$
 \end{vmatrix}
 ${$tep1}{\style{visibility:hidden}{(x+1)(x+1)}}
 $$
+
+
+# 预览markdown 
+Ctrl+Shift+V  
